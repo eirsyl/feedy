@@ -1,38 +1,63 @@
 package cmd
 
 import (
+	"github.com/eirsyl/feedy/pkg/client"
+	"github.com/eirsyl/feedy/pkg/pocket"
+	"github.com/eirsyl/flexit/log"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	"github.com/eirsyl/feedy/pkg/config"
-	"github.com/eirsyl/flexit/cmd"
 )
 
-func init() {
-	cmd.BoolConfig(loginCmd, "force", "", false, "override existing authentication token if present")
-}
-
 var loginCmd = &cobra.Command{
-	Use:   "login",
+	Use:   "login [consumer-key]",
 	Short: "Authenticate with pocket",
 	Long: `
 Authenticate with pocket and store authentication token.
 	`,
-	Args: cobra.NoArgs,
+	Args: cobra.ExactArgs(1),
 	PreRun: func(_ *cobra.Command, args []string) {
 	},
 	RunE: func(_ *cobra.Command, args []string) error {
 
-		var force bool
+		var consumerKey string
 		{
-			force = viper.GetBool("force")
+			consumerKey = args[0]
 		}
+
+		logger := log.NewLogrusLogger(false)
 
 		c, err := config.NewFileConfig()
 		if err != nil {
-			return err
+			return errors.Wrap(err, "could not create config backend")
+		}
+		defer c.Close()
+
+		cc, err := client.New()
+		if err != nil {
+			return errors.Wrap(err, "could not create http client")
 		}
 
-		return c.SaveToken("", force)
+		p, err := pocket.New(cc)
+		if err != nil {
+			return errors.Wrap(err, "could not create pocket client")
+		}
+
+		token, err := p.Login(consumerKey)
+		if err != nil {
+			return errors.Wrap(err, "login failed")
+		}
+
+		if err = c.SaveUser(config.User{
+			ConsumerKey: consumerKey,
+			Token:       token,
+		}); err != nil {
+			return errors.Wrap(err, "could not store access token")
+		}
+
+		logger.Info("Login successful")
+
+		return nil
 	},
 }

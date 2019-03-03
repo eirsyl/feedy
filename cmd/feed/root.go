@@ -6,6 +6,8 @@ import (
 
 func init() {
 	FeedCmd.AddCommand(addCmd)
+	FeedCmd.AddCommand(removeCmd)
+	FeedCmd.AddCommand(listCmd)
 }
 
 // FeedCmd is used as the main entrypoint for the feed subcommands

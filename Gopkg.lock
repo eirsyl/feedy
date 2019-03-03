@@ -101,6 +101,12 @@
   version = "v1.2.0"
 
 [[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
+  version = "v0.8.1"
+
+[[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   revision = "e1e72e9de974bd926e5c56f83753fba2df402ce5"
@@ -144,6 +150,12 @@
   packages = ["."]
   revision = "6d33b5a963d922d182c91e8a1c88d81fd150cfd4"
   version = "v1.3.1"
+
+[[projects]]
+  name = "go.etcd.io/bbolt"
+  packages = ["."]
+  revision = "63597a96ec0ad9e6d43c3fc81e809909e0237461"
+  version = "v1.3.2"
 
 [[projects]]
   branch = "master"
@@ -206,6 +218,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ee469ad180f5be66e305101a58469c47462f801d37e916765bad717ab5ac6afa"
+  inputs-digest = "29090a612c6fc7479751e9768649a6ad85065a5709caacb283379653e26664a2"
   solver-name = "gps-cdcl"
   solver-version = 1

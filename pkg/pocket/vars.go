@@ -1,6 +1,15 @@
 package pocket
 
-const (
-	// ConsumerKey is used to identify this app during pocket authentication
-	ConsumerKey = "	84291-9ca9abb71a89dc3a501798e1"
+import "errors"
+
+var (
+	// RedirectServerListen defines the redirect server listen addr, should match the redirect url
+	RedirectServerListen = "127.0.0.1:38269"
+	// RedirectURL stores the redirect url used by the cli
+	RedirectURL = "http://127.0.0.1:38269/complete"
+
+	// ErrLoginCanceled Error
+	ErrLoginCanceled = errors.New("Login canceled")
+	// ErrInvalidOAuth2State Error
+	ErrInvalidOAuth2State = errors.New("Invalid OAuth2 state")
 )

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/eirsyl/flexit/cmd"
 	"github.com/spf13/cobra"
 
 	"github.com/eirsyl/feedy/cmd/feed"
@@ -11,6 +12,8 @@ func init() {
 	RootCmd.AddCommand(scrapeCmd)
 	RootCmd.AddCommand(loginCmd)
 	RootCmd.AddCommand(feed.FeedCmd)
+
+	cmd.StringConfig(RootCmd, "configFile", "c", "", "config file path")
 }
 
 // RootCmd is ised as the main entrypoint for this application
