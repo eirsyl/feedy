@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/eirsyl/feedy/pkg/client"
 	"github.com/eirsyl/feedy/pkg/pocket"
-	"github.com/eirsyl/flexit/log"
+	"github.com/jedib0t/go-pretty/text"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
@@ -26,13 +28,11 @@ Authenticate with pocket and store authentication token.
 			consumerKey = args[0]
 		}
 
-		logger := log.NewLogrusLogger(false)
-
 		c, err := config.NewFileConfig()
 		if err != nil {
 			return errors.Wrap(err, "could not create config backend")
 		}
-		defer c.Close()
+		defer c.Close() // nolint: errcheck
 
 		cc, err := client.New()
 		if err != nil {
@@ -56,7 +56,7 @@ Authenticate with pocket and store authentication token.
 			return errors.Wrap(err, "could not store access token")
 		}
 
-		logger.Info("Login successful")
+		fmt.Println(text.FgGreen.Sprint("Login successful"))
 
 		return nil
 	},

@@ -14,6 +14,7 @@ func init() {
 	RootCmd.AddCommand(feed.FeedCmd)
 
 	cmd.StringConfig(RootCmd, "configFile", "c", "", "config file path")
+	cmd.IntConfig(RootCmd, "concurrency", "", 10, "feeds to scrape concurrent")
 }
 
 // RootCmd is ised as the main entrypoint for this application

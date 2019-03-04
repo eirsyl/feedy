@@ -1,10 +1,10 @@
 package feed
 
 import (
+	"fmt"
 	"net/url"
 
-	"github.com/eirsyl/flexit/log"
-
+	"github.com/jedib0t/go-pretty/text"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
@@ -24,8 +24,6 @@ Add feed to the list of feeds to scrape.
 	},
 	RunE: func(_ *cobra.Command, args []string) error {
 
-		logger := log.NewLogrusLogger(false)
-
 		feedURL := args[0]
 		tags := args[1:]
 
@@ -33,7 +31,7 @@ Add feed to the list of feeds to scrape.
 		if err != nil {
 			return err
 		}
-		defer c.Close()
+		defer c.Close() // nolint: errcheck
 
 		u, err := url.Parse(feedURL)
 		if err != nil {
@@ -71,7 +69,7 @@ Add feed to the list of feeds to scrape.
 			}
 		}
 
-		logger.Infof("Added feed %s (%s) to list of feeds to scrape", meta.Title, meta.URL)
+		fmt.Println(text.FgGreen.Sprintf("Added %s (%s) to the watch list", meta.Title, meta.URL))
 
 		return nil
 	},

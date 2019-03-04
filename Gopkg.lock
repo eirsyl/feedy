@@ -59,6 +59,15 @@
   version = "v1.0"
 
 [[projects]]
+  name = "github.com/jedib0t/go-pretty"
+  packages = [
+    "table",
+    "text"
+  ]
+  revision = "a37e1e030434d93557ca8a6a77b4cf9d31cc21ff"
+  version = "v4.0.2"
+
+[[projects]]
   name = "github.com/konsorten/go-windows-terminal-sequences"
   packages = ["."]
   revision = "f55edac94c9bbba5d6182a4be46d86a2c9b5b50e"
@@ -93,6 +102,12 @@
   name = "github.com/mmcdole/goxpp"
   packages = ["."]
   revision = "0068e33feabfc0086c7aeb58a9603f91c061c89f"
+
+[[projects]]
+  name = "github.com/oklog/run"
+  packages = ["."]
+  revision = "4dadeb3030eda0273a12382bb2348ffc7c9d1a39"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/pelletier/go-toml"
@@ -218,6 +233,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "29090a612c6fc7479751e9768649a6ad85065a5709caacb283379653e26664a2"
+  inputs-digest = "040d79060e8d3ca6d4e0cb5ddedf3d9e666c92f1f7cd8a983925c02b2a5b30b2"
   solver-name = "gps-cdcl"
   solver-version = 1

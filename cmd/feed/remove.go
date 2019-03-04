@@ -1,10 +1,10 @@
 package feed
 
 import (
+	"fmt"
 	"net/url"
 
-	"github.com/eirsyl/flexit/log"
-
+	"github.com/jedib0t/go-pretty/text"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
@@ -22,15 +22,13 @@ Remove feed from the list of feeds to scrape.
 	},
 	RunE: func(_ *cobra.Command, args []string) error {
 
-		logger := log.NewLogrusLogger(false)
-
 		feedURL := args[0]
 
 		c, err := config.NewFileConfig()
 		if err != nil {
 			return err
 		}
-		defer c.Close()
+		defer c.Close() // nolint: errcheck
 
 		u, err := url.Parse(feedURL)
 		if err != nil {
@@ -41,7 +39,7 @@ Remove feed from the list of feeds to scrape.
 			return errors.Wrap(err, "could not remove feed from config")
 		}
 
-		logger.Infof("Removed feed %s from the list of feeds to scrape", u.String())
+		fmt.Println(text.FgGreen.Sprintf("Successfully removed %s from the watch list", u.String()))
 
 		return nil
 	},

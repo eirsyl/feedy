@@ -11,8 +11,9 @@ import (
 	"time"
 
 	"github.com/eirsyl/flexit/log"
-	"github.com/getwhale/cli/pkg/utils"
 	"github.com/pkg/errors"
+
+	"github.com/eirsyl/feedy/pkg/utils"
 )
 
 func (p *basePocket) Login(consumerKey string) (string, error) {

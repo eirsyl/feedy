@@ -2,6 +2,7 @@ package pocket
 
 import (
 	"context"
+	"strings"
 
 	"github.com/eirsyl/feedy/pkg/client"
 	"github.com/pkg/errors"
@@ -28,7 +29,7 @@ func (p *basePocket) AddItem(url, name string, tags []string, consumerKey, token
 	addItemBody, err := p.c.NewRequest("POST", "https://getpocket.com/v3/add", addItemRequest{
 		URL:         url,
 		Title:       name,
-		Tags:        tags,
+		Tags:        strings.Join(tags, ","),
 		ConsumerKey: consumerKey,
 		AccessToken: token,
 	})
@@ -45,9 +46,9 @@ func (p *basePocket) AddItem(url, name string, tags []string, consumerKey, token
 }
 
 type addItemRequest struct {
-	URL         string   `json:"url"`
-	Title       string   `json:"title"`
-	Tags        []string `json:"tags"`
-	ConsumerKey string   `json:"consumer_key"`
-	AccessToken string   `json:"access_token"`
+	URL         string `json:"url"`
+	Title       string `json:"title"`
+	Tags        string `json:"tags"`
+	ConsumerKey string `json:"consumer_key"`
+	AccessToken string `json:"access_token"`
 }
