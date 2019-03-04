@@ -19,7 +19,8 @@ func init() {
 
 // RootCmd is ised as the main entrypoint for this application
 var RootCmd = &cobra.Command{
-	Use:   pkg.App.GetShortName(),
-	Short: pkg.App.GetDescription(),
-	Args:  cobra.NoArgs,
+	Use:     pkg.App.GetShortName(),
+	Short:   pkg.App.GetDescription(),
+	Args:    cobra.NoArgs,
+	Version: pkg.Version,
 }

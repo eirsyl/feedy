@@ -5,6 +5,7 @@ PACKAGE  = feedy
 DATE    ?= $(shell date +%FT%T%z)
 VERSION ?= $(shell git describe --tags --always --dirty --match=v* 2> /dev/null || \
 			cat $(CURDIR)/.version 2> /dev/null || echo v0)
+LAST_TAG = $(shell git describe --abbrev=0 --tags)
 BIN      = $(GOPATH)/bin
 IMPORT   = github.com/$(AUTHOR)/$(PACKAGE)
 BASE     = $(GOPATH)/src/$(IMPORT)
@@ -64,6 +65,10 @@ $(BIN)/protoc-gen-go: | $(BASE) ; $(info $(M) building proto-gen-go…)
 STRINGER = $(BIN)/stringer
 $(BIN)/stringer: | $(BASE) ; $(info $(M) building stringer…)
 	$Q go get golang.org/x/tools/cmd/stringer
+
+GITHUBRELEASE = $(BIN)/github-release
+$(bin)/github-release: | $(BASE) ; $(info $(M) building github-release…)
+	$Q go get github.com/aktau/github-release
 
 # Tests
 
@@ -125,8 +130,8 @@ vendor: Gopkg.lock | $(BASE) $(DEP) ; $(info $(M) retrieving dependencies…)
 build: vendor | $(BASE) ; $(info $(M) building executable…) @ ## Build program binary
 	$Q cd $(BASE) && $(GO) build \
 		-tags release \
-		-ldflags '-X $(IMPORT)/pkg.Version=$(VERSION) -X $(IMPORT)/pkg.BuildDate=$(DATE)' \
-		-o bin/$(PACKAGE) main.go
+		-ldflags '-X $(IMPORT)/pkg.Version="$(if $(OUT_VERSION),$(OUT_VERSION),$(VERSION))" -X $(IMPORT)/pkg.BuildDate=$(DATE)' \
+		-o $(if $(OUT),$(OUT),bin/$(PACKAGE)) main.go
 
 # Docker
 
@@ -134,10 +139,7 @@ PREFIX=$(AUTHOR)/$(PACKAGE)
 
 .PHONY: container
 container: vendor | $(BASE) ; $(info $(M) building container…) @ ## Build container
-	$Q cd $(BASE) && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GO) build \
-		-tags release \
-		-ldflags '-X $(IMPORT)/pkg.Version=$(VERSION) -X $(IMPORT)/pkg.BuildDate=$(DATE)' \
-		-o bin/$(PACKAGE) main.go
+	$Q CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(MAKE) build
 	$Q docker build --pull -t $(PREFIX):$(VERSION) . --no-cache
 	$Q docker tag $(PREFIX):$(VERSION) $(PREFIX):latest
 
@@ -147,6 +149,59 @@ push: container
 
 	$Q docker tag $(PREFIX):$(VERSION) registry.whale.io/$(AUTHOR)/$(PACKAGE):latest
 	$Q docker push registry.whale.io/$(AUTHOR)/$(PACKAGE):latest
+
+# Release
+
+# arm
+bin/linux/arm/5/$(PACKAGE): | $(BASE) ; $(info $(M) building arm-5 executable…) @
+	$Q GOARM=5 GOARCH=arm GOOS=linux OUT="$@" $(MAKE) build
+bin/linux/arm/7/$(PACKAGE): | $(BASE) ; $(info $(M) building arm-7 executable…) @
+	$Q GOARM=7 GOARCH=arm GOOS=linux OUT="$@" $(MAKE) build
+
+# 386
+bin/darwin/386/$(PACKAGE): | $(BASE) ; $(info $(M) building darwin-386 executable…) @
+	$Q GOARCH=386 GOOS=darwin OUT="$@" $(MAKE) build
+bin/linux/386/$(PACKAGE): | $(BASE) ; $(info $(M) building linux-386 executable…) @
+	$Q GOARCH=386 GOOS=linux OUT="$@"$(MAKE) build
+bin/windows/386/$(PACKAGE): | $(BASE) ; $(info $(M) building windows-386 executable…) @
+	$Q GOARCH=386 GOOS=windows OUT="$@" $(MAKE) build
+
+# amd64
+bin/freebsd/amd64/$(PACKAGE): | $(BASE) ; $(info $(M) building freebsd-amd64 executable…) @
+	$Q GOARCH=amd64 GOOS=freebsd OUT="$@" $(MAKE) build
+bin/darwin/amd64/$(PACKAGE): | $(BASE) ; $(info $(M) building darwin-amd64 executable…) @
+	$Q GOARCH=amd64 GOOS=darwin OUT="$@" $(MAKE) build
+bin/linux/amd64/$(PACKAGE): | $(BASE) ; $(info $(M) building linux-amd64 executable…) @
+	$Q GOARCH=amd64 GOOS=linux OUT="$@" $(MAKE) build
+bin/windows/amd64/$(PACKAGE).exe: | $(BASE) ; $(info $(M) building windows-amd64 executable…) @
+	$Q GOARCH=amd64 GOOS=windows OUT="$@" $(MAKE) build
+
+UNIX_EXECUTABLES := \
+	linux/arm/5/$(PACKAGE) \
+	linux/arm/7/$(PACKAGE) \
+	darwin/amd64/$(PACKAGE) \
+	freebsd/amd64/$(PACKAGE) \
+	linux/amd64/$(PACKAGE)
+WIN_EXECUTABLES := \
+	windows/amd64/$(PACKAGE).exe
+
+COMPRESSED_EXECUTABLES=$(UNIX_EXECUTABLES:%=%.bz2) $(WIN_EXECUTABLES:%.exe=%.zip)
+COMPRESSED_EXECUTABLE_TARGETS=$(COMPRESSED_EXECUTABLES:%=bin/%)
+
+UPLOAD_CMD = $(GITHUBRELEASE) upload -u $(AUTHOR) -r $(PACKAGE) -t $(LAST_TAG) -n $(subst /,-,$(FILE)) -f bin/$(FILE)
+
+%.bz2: %
+	$Q bzip2 -c < "$<" > "$@"
+%.zip: %.exe
+	$Q zip "$@" "$<"
+
+.PHONY: release
+release: | $(BASE) $(GITHUBRELEASE) ; $(info $(M) releasing application…) @ ## Upload release to GitHub
+	$Q OUT_VERSION=$(LAST_TAG) $(MAKE) $(COMPRESSED_EXECUTABLE_TARGETS)
+	$Q git log --format=%B $(LAST_TAG) -1 | \
+		$(GITHUBRELEASE) release -u $(AUTHOR) -r $(PACKAGE) \
+		-t $(LAST_TAG) -n $(LAST_TAG) -d - || true
+	$Q $(foreach FILE,$(COMPRESSED_EXECUTABLES),$(UPLOAD_CMD);)
 
 # Misc
 
