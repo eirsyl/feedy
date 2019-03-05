@@ -1,7 +1,9 @@
 package scraper
 
 import (
+	"context"
 	"net/url"
+	"strings"
 
 	"github.com/eirsyl/feedy/pkg/client"
 
@@ -25,12 +27,13 @@ type Result struct {
 
 // Scraper defines the methods used when interacting with a feed
 type Scraper interface {
-	DiscoverFeed(u *url.URL) (*FeedMeta, error)
-	ScrapeFeed(u *url.URL) ([]Result, error)
+	DiscoverFeed(ctx context.Context, u *url.URL) (*FeedMeta, error)
+	ScrapeFeed(ctx context.Context, u *url.URL) ([]Result, error)
 }
 
 type baseScraper struct {
 	parser *gofeed.Parser
+	client *client.Client
 }
 
 // New returns a new scraper instance
@@ -40,12 +43,13 @@ func New(c *client.Client) (Scraper, error) {
 
 	return &baseScraper{
 		parser: parser,
+		client: c,
 	}, nil
 }
 
-func (s *baseScraper) DiscoverFeed(u *url.URL) (*FeedMeta, error) {
+func (s *baseScraper) DiscoverFeed(ctx context.Context, u *url.URL) (*FeedMeta, error) {
 
-	feed, err := s.parser.ParseURL(u.String())
+	feed, err := s.scrape(ctx, u)
 	if err != nil {
 		return nil, err
 	}
@@ -69,11 +73,11 @@ func (s *baseScraper) DiscoverFeed(u *url.URL) (*FeedMeta, error) {
 	}, nil
 }
 
-func (s *baseScraper) ScrapeFeed(u *url.URL) ([]Result, error) {
+func (s *baseScraper) ScrapeFeed(ctx context.Context, u *url.URL) ([]Result, error) {
 
 	var result []Result
 
-	feed, err := s.parser.ParseURL(u.String())
+	feed, err := s.scrape(ctx, u)
 	if err != nil {
 		return nil, err
 	}
@@ -86,4 +90,26 @@ func (s *baseScraper) ScrapeFeed(u *url.URL) ([]Result, error) {
 	}
 
 	return result, nil
+}
+
+func (s *baseScraper) scrape(ctx context.Context, u *url.URL) (*gofeed.Feed, error) {
+
+	req, err := s.client.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Accept", "application/xhtml+xml,application/xml;q=0.9")
+
+	// tumblr.com presents the users with a GDPR screen if the user-agent is present
+	if strings.Contains(u.Host, "tumblr.com") {
+		req.Header.Del("User-Agent")
+	}
+
+	resp, err := s.client.Do(ctx, req, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close() // nolint: gas, errcheck
+
+	return s.parser.Parse(resp.Body)
 }

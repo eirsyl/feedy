@@ -10,8 +10,8 @@ import (
 
 // Pocket defines the methods used when onteracting with pocket
 type Pocket interface {
-	Login(consumerKey string) (string, error)
-	AddItem(url, name string, tags []string, consumerKey, token string) error
+	Login(ctx context.Context, consumerKey string) (string, error)
+	AddItem(ctx context.Context, url, name string, tags []string, consumerKey, token string) error
 }
 
 type basePocket struct {
@@ -25,7 +25,7 @@ func New(c *client.Client) (Pocket, error) {
 	}, nil
 }
 
-func (p *basePocket) AddItem(url, name string, tags []string, consumerKey, token string) error {
+func (p *basePocket) AddItem(ctx context.Context, url, name string, tags []string, consumerKey, token string) error {
 	addItemBody, err := p.c.NewRequest("POST", "https://getpocket.com/v3/add", addItemRequest{
 		URL:         url,
 		Title:       name,
@@ -36,8 +36,9 @@ func (p *basePocket) AddItem(url, name string, tags []string, consumerKey, token
 	if err != nil {
 		return errors.Wrap(err, "could not create add item request")
 	}
+	addItemBody.Header.Set("X-Accept", "application/json")
 
-	_, err = p.c.Do(context.TODO(), addItemBody, nil)
+	_, err = p.c.Do(ctx, addItemBody, nil)
 	if err != nil {
 		return errors.Wrap(err, "could not add item")
 	}

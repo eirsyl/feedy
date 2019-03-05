@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/eirsyl/feedy/pkg/client"
@@ -44,7 +45,7 @@ Authenticate with pocket and store authentication token.
 			return errors.Wrap(err, "could not create pocket client")
 		}
 
-		token, err := p.Login(consumerKey)
+		token, err := p.Login(context.TODO(), consumerKey)
 		if err != nil {
 			return errors.Wrap(err, "login failed")
 		}

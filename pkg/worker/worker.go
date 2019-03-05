@@ -21,7 +21,6 @@ type Worker interface {
 // nolint: maligned
 type baseWorker struct {
 	concurrency int
-	autostop    bool
 
 	jobs    chan *job
 	results chan *jobResult
@@ -40,7 +39,6 @@ type baseWorker struct {
 // New returns a new instance of the worker
 func New(
 	concurrency int,
-	autostop bool,
 
 	user config.User,
 	config config.Config,
@@ -50,7 +48,6 @@ func New(
 ) (Worker, error) {
 	worker := &baseWorker{
 		concurrency: concurrency,
-		autostop:    autostop,
 
 		jobs:    make(chan *job, 100),
 		results: make(chan *jobResult, 100),
@@ -134,9 +131,7 @@ func (w *baseWorker) Run() error {
 	}()
 
 	// Wait on close signal and then all pending builds
-	if !w.autostop {
-		<-w.stop
-	}
+	<-w.stop
 	w.wg.Wait()
 
 	// Close jobs and results channels, this stops the workers
@@ -148,4 +143,5 @@ func (w *baseWorker) Run() error {
 
 func (w *baseWorker) Stop(err error) {
 	w.stop <- struct{}{}
+	w.stopped = true
 }

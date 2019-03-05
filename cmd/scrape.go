@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"time"
+
 	"github.com/spf13/viper"
 
 	"github.com/oklog/run"
@@ -16,6 +18,10 @@ import (
 	"github.com/eirsyl/flexit/log"
 )
 
+func init() {
+	cmd.BoolConfig(scrapeCmd, "autostop", "", true, "stop scraping of feeds after one iteration")
+}
+
 var scrapeCmd = &cobra.Command{
 	Use:   "scrape",
 	Short: "Scrape watched feeds",
@@ -28,6 +34,11 @@ Scrape watched feeds and send new items to pocket.
 	RunE: func(_ *cobra.Command, args []string) error {
 
 		logger := log.NewLogrusLogger(false)
+
+		var autostop bool
+		{
+			autostop = viper.GetBool("autostop")
+		}
 
 		c, err := config.NewFileConfig()
 		if err != nil {
@@ -55,14 +66,8 @@ Scrape watched feeds and send new items to pocket.
 			return errors.Wrap(err, "could not create scraper")
 		}
 
-		feeds, err := c.GetFeeds()
-		if err != nil {
-			return errors.Wrap(err, "could not lookup feeds")
-		}
-
 		w, err := worker.New(
 			viper.GetInt("concurrency"),
-			true,
 			user,
 			c,
 			scr,
@@ -73,12 +78,11 @@ Scrape watched feeds and send new items to pocket.
 			return errors.Wrap(err, "could not create scrape worker")
 		}
 
-		// Add feeds to the worker queue
-		for _, feed := range feeds {
-			err = w.Add(feed)
-			if err != nil {
-				return errors.Wrap(err, "could not create feed scrape task")
-			}
+		s := scheduler{
+			w:        w,
+			c:        c,
+			autostop: autostop,
+			stopped:  make(chan struct{}, 1),
 		}
 
 		// Run the worker
@@ -87,9 +91,54 @@ Scrape watched feeds and send new items to pocket.
 			g.Add(w.Run, w.Stop)
 		}
 		{
+			g.Add(s.run, s.stop)
+		}
+		{
 			g.Add(cmd.Interrupt(logger))
 		}
 
 		return g.Run()
 	},
+}
+
+type scheduler struct {
+	w        worker.Worker
+	c        config.Config
+	autostop bool
+	stopped  chan struct{}
+}
+
+func (s *scheduler) run() error {
+	for {
+
+		// Lookup feeds from config
+		feeds, err := s.c.GetFeeds()
+		if err != nil {
+			return errors.Wrap(err, "could not lookup feeds")
+		}
+
+		// Add feeds to the worker queue
+		for _, feed := range feeds {
+			err = s.w.Add(feed)
+			if err != nil {
+				return errors.Wrap(err, "could not create feed scrape task")
+			}
+		}
+
+		if s.autostop {
+			return nil
+		}
+
+		select {
+		case <-s.stopped:
+			return nil
+		case <-time.After(15 * time.Minute):
+
+		}
+
+	}
+}
+
+func (s *scheduler) stop(err error) {
+	s.stopped <- struct{}{}
 }

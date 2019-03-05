@@ -61,12 +61,11 @@ func (c *Client) NewRequest(method, url string, body interface{}) (*http.Request
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json; charset=UTF8")
 	}
-	//req.Header.Set("Accept", "application/json")
-	req.Header.Set("X-Accept", "application/json")
 
 	if c.UserAgent != "" {
 		req.Header.Set("User-Agent", c.UserAgent)
 	}
+
 	return req, nil
 }
 
@@ -96,7 +95,6 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 
 		return nil, err
 	}
-	defer resp.Body.Close() // nolint: errcheck
 
 	err = CheckResponse(resp)
 	if err != nil {
@@ -104,6 +102,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 	}
 
 	if v != nil {
+		defer resp.Body.Close() // nolint: errcheck
 		if w, ok := v.(io.Writer); ok {
 			_, err = io.Copy(w, resp.Body)
 			if err != nil {

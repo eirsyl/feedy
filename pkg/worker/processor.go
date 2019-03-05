@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"context"
 	"net/url"
 	"time"
 
@@ -60,7 +61,11 @@ func (p *processor) run() {
 }
 
 func (p *processor) process(j *job) error {
-	//ctx := context.TODO()
+	ctx, cancel := context.WithDeadline(
+		context.TODO(),
+		j.createTime.Add(JobTimeout),
+	)
+	defer cancel()
 
 	var currentTime = time.Now()
 	j.startTime = &currentTime
@@ -71,7 +76,7 @@ func (p *processor) process(j *job) error {
 		return errors.Wrapf(err, "invalid feed url %s", j.feed.URL)
 	}
 
-	results, err := p.scraper.ScrapeFeed(u)
+	results, err := p.scraper.ScrapeFeed(ctx, u)
 	if err != nil {
 		return errors.Wrapf(err, "could not scrape feed %s", j.feed.URL)
 	}
@@ -84,7 +89,7 @@ func (p *processor) process(j *job) error {
 		}
 
 		if !isScraped {
-			if err = p.pocket.AddItem(result.URL, result.Name, j.feed.Tags, p.user.ConsumerKey, p.user.Token); err != nil {
+			if err = p.pocket.AddItem(ctx, result.URL, result.Name, j.feed.Tags, p.user.ConsumerKey, p.user.Token); err != nil {
 				return errors.Wrapf(err, "could not add %s to pocket", result.URL)
 			}
 

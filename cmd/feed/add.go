@@ -1,6 +1,7 @@
 package feed
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 
@@ -48,7 +49,7 @@ Add feed to the list of feeds to scrape.
 			return errors.Wrap(err, "could not initialize scraper")
 		}
 
-		meta, err := s.DiscoverFeed(u)
+		meta, err := s.DiscoverFeed(context.TODO(), u)
 		if err != nil {
 			return errors.Wrap(err, "could not load feed metadata")
 		}

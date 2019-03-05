@@ -16,7 +16,7 @@ import (
 	"github.com/eirsyl/feedy/pkg/utils"
 )
 
-func (p *basePocket) Login(consumerKey string) (string, error) {
+func (p *basePocket) Login(ctx context.Context, consumerKey string) (string, error) {
 
 	logger := log.NewLogrusLogger(false)
 
@@ -27,9 +27,10 @@ func (p *basePocket) Login(consumerKey string) (string, error) {
 	if err != nil {
 		return "", errors.Wrap(err, "could not create request token body")
 	}
+	requestTokenBody.Header.Set("X-Accept", "application/json")
 
 	var requestToken requestTokenResponse
-	_, err = p.c.Do(context.TODO(), requestTokenBody, &requestToken)
+	_, err = p.c.Do(ctx, requestTokenBody, &requestToken)
 	if err != nil {
 		return "", errors.Wrap(err, "could not retrieve request token")
 	}
@@ -55,9 +56,10 @@ func (p *basePocket) Login(consumerKey string) (string, error) {
 	if err != nil {
 		return "", errors.Wrap(err, "could not create access token request")
 	}
+	accessTokenBody.Header.Set("X-Accept", "application/json")
 
 	var accessToken accessTokenResponse
-	_, err = p.c.Do(context.TODO(), accessTokenBody, &accessToken)
+	_, err = p.c.Do(ctx, accessTokenBody, &accessToken)
 	if err != nil {
 		return "", errors.Wrap(err, "could not retrieve access token")
 	}
