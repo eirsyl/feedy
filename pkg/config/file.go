@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -25,7 +26,9 @@ func NewFileConfig() (Config, error) {
 		return nil, ErrConfigFileNotGiven
 	}
 
-	db, err := bolt.Open(path, 0600, nil)
+	db, err := bolt.Open(path, 0600, &bolt.Options{
+		Timeout: 5 * time.Second,
+	})
 	if err != nil {
 		return nil, errors.Wrap(err, "could not open database")
 	}
