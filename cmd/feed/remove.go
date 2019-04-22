@@ -24,7 +24,7 @@ Remove feed from the list of feeds to scrape.
 
 		feedURL := args[0]
 
-		c, err := config.NewFileConfig()
+		c, err := config.GetConfigProvider()
 		if err != nil {
 			return err
 		}

@@ -28,7 +28,7 @@ Add feed to the list of feeds to scrape.
 		feedURL := args[0]
 		tags := args[1:]
 
-		c, err := config.NewFileConfig()
+		c, err := config.GetConfigProvider()
 		if err != nil {
 			return err
 		}

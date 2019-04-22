@@ -29,7 +29,7 @@ Authenticate with pocket and store authentication token.
 			consumerKey = args[0]
 		}
 
-		c, err := config.NewFileConfig()
+		c, err := config.GetConfigProvider()
 		if err != nil {
 			return errors.Wrap(err, "could not create config backend")
 		}

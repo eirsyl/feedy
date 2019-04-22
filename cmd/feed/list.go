@@ -22,7 +22,7 @@ List all feeds configured for scraping.
 	},
 	RunE: func(_ *cobra.Command, args []string) error {
 
-		c, err := config.NewFileConfig()
+		c, err := config.GetConfigProvider()
 		if err != nil {
 			return err
 		}

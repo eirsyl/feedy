@@ -13,7 +13,13 @@ func init() {
 	RootCmd.AddCommand(loginCmd)
 	RootCmd.AddCommand(feed.FeedCmd)
 
+	cmd.StringConfig(RootCmd, "configBackend", "", "file", "config backend provider")
 	cmd.StringConfig(RootCmd, "configFile", "c", "", "config file path")
+	cmd.StringConfig(RootCmd, "postgresHost", "", "localhost", "postgres database host")
+	cmd.StringConfig(RootCmd, "postgresUser", "", "feedy", "postgres database user")
+	cmd.StringConfig(RootCmd, "postgresPassword", "", "", "postgres database password")
+	cmd.StringConfig(RootCmd, "postgresDatabase", "", "feedy", "postgres database database")
+	cmd.IntConfig(RootCmd, "postgresPort", "", 5432, "postgres database post")
 	cmd.IntConfig(RootCmd, "concurrency", "", 10, "feeds to scrape concurrent")
 }
 

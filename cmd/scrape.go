@@ -3,11 +3,10 @@ package cmd
 import (
 	"time"
 
-	"github.com/spf13/viper"
-
 	"github.com/oklog/run"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/eirsyl/feedy/pkg/client"
 	"github.com/eirsyl/feedy/pkg/config"
@@ -40,7 +39,7 @@ Scrape watched feeds and send new items to pocket.
 			autostop = viper.GetBool("autostop")
 		}
 
-		c, err := config.NewFileConfig()
+		c, err := config.GetConfigProvider()
 		if err != nil {
 			return errors.Wrap(err, "could not create config backend")
 		}
