@@ -78,8 +78,13 @@ func (c *postgresConfig) SaveUser(user User) error {
 			SET consumerKey = $2, token = $3;
 	`
 
-	_, err := c.db.Query(statement, 1, user.ConsumerKey, user.Token)
-	return err
+	rows, err := c.db.Query(statement, 1, user.ConsumerKey, user.Token)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	return nil
 }
 
 func (c *postgresConfig) GetUser() (User, error) {
@@ -113,6 +118,7 @@ func (c *postgresConfig) GetFeeds() ([]Feed, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var feed Feed
@@ -152,8 +158,13 @@ func (c *postgresConfig) AddFeed(feed Feed) error {
 			SET name = $1, tags = $3;
 	`
 
-	_, err := c.db.Query(statement, feed.Name, feed.URL, pq.Array(feed.Tags))
-	return err
+	rows, err := c.db.Query(statement, feed.Name, feed.URL, pq.Array(feed.Tags))
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	return nil
 }
 
 func (c *postgresConfig) RemoveFeed(url string) error {
@@ -195,8 +206,13 @@ func (c *postgresConfig) AddScrapedURL(url string) error {
 	ON CONFLICT DO NOTHING;
 	`
 
-	_, err := c.db.Query(statement, strings.ToLower(url))
-	return err
+	rows, err := c.db.Query(statement, strings.ToLower(url))
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	return nil
 }
 
 func (c *postgresConfig) IsScrapedURL(url string) (bool, error) {

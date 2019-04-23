@@ -147,9 +147,6 @@ container: vendor | $(BASE) ; $(info $(M) building container…) @ ## Build cont
 push: container
 	$Q docker push $(PREFIX):$(VERSION)
 
-	$Q docker tag $(PREFIX):$(VERSION) registry.whale.io/$(AUTHOR)/$(PACKAGE):latest
-	$Q docker push registry.whale.io/$(AUTHOR)/$(PACKAGE):latest
-
 # Release
 
 # arm
