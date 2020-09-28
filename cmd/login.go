@@ -20,8 +20,6 @@ var loginCmd = &cobra.Command{
 Authenticate with pocket and store authentication token.
 	`,
 	Args: cobra.ExactArgs(1),
-	PreRun: func(_ *cobra.Command, args []string) {
-	},
 	RunE: func(_ *cobra.Command, args []string) error {
 
 		var consumerKey string

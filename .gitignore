@@ -1,5 +1,7 @@
 vendor/
 bin/
 tmp/
+test-results/
+artifacts/
 
 config.db

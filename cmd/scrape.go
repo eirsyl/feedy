@@ -12,14 +12,10 @@ import (
 	"github.com/eirsyl/feedy/pkg/config"
 	"github.com/eirsyl/feedy/pkg/pocket"
 	"github.com/eirsyl/feedy/pkg/scraper"
+	"github.com/eirsyl/feedy/pkg/utils/interrupt"
+	"github.com/eirsyl/feedy/pkg/utils/log"
 	"github.com/eirsyl/feedy/pkg/worker"
-	"github.com/eirsyl/flexit/cmd"
-	"github.com/eirsyl/flexit/log"
 )
-
-func init() {
-	cmd.BoolConfig(scrapeCmd, "autostop", "", true, "stop scraping of feeds after one iteration")
-}
 
 var scrapeCmd = &cobra.Command{
 	Use:   "scrape",
@@ -28,8 +24,6 @@ var scrapeCmd = &cobra.Command{
 Scrape watched feeds and send new items to pocket.
 	`,
 	Args: cobra.NoArgs,
-	PreRun: func(_ *cobra.Command, args []string) {
-	},
 	RunE: func(_ *cobra.Command, args []string) error {
 
 		logger := log.NewLogrusLogger(false)
@@ -93,7 +87,7 @@ Scrape watched feeds and send new items to pocket.
 			g.Add(s.run, s.stop)
 		}
 		{
-			g.Add(cmd.Interrupt(logger))
+			g.Add(interrupt.Interrupt(logger))
 		}
 
 		return g.Run()

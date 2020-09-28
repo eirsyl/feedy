@@ -4,11 +4,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/eirsyl/flexit/log"
-
 	"github.com/eirsyl/feedy/pkg/config"
 	"github.com/eirsyl/feedy/pkg/pocket"
 	"github.com/eirsyl/feedy/pkg/scraper"
+	"github.com/eirsyl/feedy/pkg/utils/log"
 )
 
 // Worker defines the worker interface used to scrape multiple feeds at once

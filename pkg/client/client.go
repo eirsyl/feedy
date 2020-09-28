@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/eirsyl/feedy/pkg"
+	"github.com/eirsyl/feedy/internal"
 )
 
 // Client for communicating with the gateway
@@ -31,7 +31,7 @@ func New() (*Client, error) {
 		return nil, err
 	}
 
-	ua := fmt.Sprintf("Feedy %s", pkg.Version)
+	ua := fmt.Sprintf("Feedy %s", internal.Version)
 	c := &Client{
 		client:    httpClient,
 		UserAgent: ua,

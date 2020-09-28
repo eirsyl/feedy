@@ -10,10 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/eirsyl/flexit/log"
 	"github.com/pkg/errors"
 
-	"github.com/eirsyl/feedy/pkg/utils"
+	"github.com/eirsyl/feedy/pkg/utils/log"
+	"github.com/eirsyl/feedy/pkg/utils/open"
 )
 
 func (p *basePocket) Login(ctx context.Context, consumerKey string) (string, error) {
@@ -37,7 +37,7 @@ func (p *basePocket) Login(ctx context.Context, consumerKey string) (string, err
 
 	// Open browser redirect
 	loginURL := fmt.Sprintf("https://getpocket.com/auth/authorize?request_token=%s&redirect_uri=%s", requestToken.Code, RedirectURL)
-	utils.OpenURL(loginURL)
+	open.OpenURL(loginURL)
 	logger.Infof("Open the following link in your browser: %s", loginURL)
 
 	select {
