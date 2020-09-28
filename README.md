@@ -7,8 +7,8 @@
 Clone repo and download dependencies:
 
 ```bash
-git clone git@github.com:eirsyl/feedy.git ${GOPATH}/src/github.com/eirsyl/feedy
-cd ${GOPATH}/src/github.com/eirsyl/feedy
+git clone git@github.com:eirsyl/feedy.git
+cd feedy
 make vendor
 ```
 
